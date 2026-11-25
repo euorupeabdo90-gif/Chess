@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>مساعد الشطرنج</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<style>
+:root{--bg:#eceae0;--ink:#1f2a24;--light:#eeeed2;--dark:#769656;--acc:#2d6a4f;--sel:#f6e05e;--hint:#1f8a70;--card:#fbfaf5;--line:#cfccbc;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161a18;--ink:#ece7da;--light:#a9b08a;--dark:#4f6b46;--acc:#4fb39e;--card:#212724;--line:#38403c}}
+:root[data-theme="dark"]{--bg:#161a18;--ink:#ece7da;--light:#a9b08a;--dark:#4f6b46;--acc:#4fb39e;--card:#212724;--line:#38403c}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Tahoma,"Noto Sans Arabic",sans-serif;padding:14px;max-width:520px;margin-inline:auto}
+h1{font-size:25px;margin:4px 0 14px;font-weight:800;letter-spacing:-.3px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+button,select{font:inherit;font-size:15px;padding:11px 15px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);box-shadow:0 2px 0 var(--line)}button:active{transform:translateY(2px);box-shadow:none}select{flex:1}
+button.main{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:600;flex:1}
+#board{direction:ltr;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));width:100%;aspect-ratio:1;border:7px solid #3b2f25;border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.28);overflow:hidden;margin-bottom:14px;touch-action:manipulation}
+.sq{display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;overflow:hidden;font-size:min(9.6vw,48px);line-height:1;position:relative;user-select:none;font-family:"Segoe UI Symbol","Noto Sans Symbols 2","Apple Symbols",serif}.co{position:absolute;font-size:10px;font-weight:700;line-height:1;font-family:sans-serif}.t{top:3px;left:3px}.f{bottom:3px;right:4px}.l .co{color:var(--dark)}.d .co{color:var(--light)}
+.l{background:var(--light)}.d{background:var(--dark)}
+.sq.last{background-image:linear-gradient(rgba(246,224,94,.5),rgba(246,224,94,.5))}.sq.sel{background:var(--sel)}
+.sq.tgt::after{content:"";width:28%;height:28%;border-radius:50%;background:rgba(0,0,0,.28);position:absolute}
+.sq.hint{box-shadow:inset 0 0 0 4px var(--hint);background-image:radial-gradient(circle,rgba(31,138,112,.5),transparent 75%)}
+.w{color:#fff;text-shadow:0 0 2px #000,0 0 2px #000,0 1px 3px rgba(0,0,0,.6)}
+.b{color:#1a1a1a;text-shadow:0 1px 2px rgba(255,255,255,.35),0 2px 3px rgba(0,0,0,.4)}
+#msg{background:var(--card);border:1px solid var(--line);border-radius:12px;border-inline-start:5px solid var(--acc);padding:14px;min-height:54px;font-size:17px;font-weight:600}
+</style>
+</head>
+<body>
+<h1>♞︎ مساعد الشطرنج</h1>
+<div class="row">
+<select id="color"><option value="w">أنا الأبيض</option><option value="b">أنا الأسود</option></select>
+<select id="lvl"><option value="1">مبتدئ</option><option value="2" selected>متوسط</option><option value="3">قوي</option></select>
+</div>
+<div id="board"></div>
+<div class="row">
+<button class="main" id="sug">اقترح حركة</button>
+<button id="undo">تراجع</button>
+<button id="new">جديدة</button>
+</div>
+<div id="msg">حرّك القطع لك وللخصم بالضغط، وبعدين اطلب اقتراح.</div>
