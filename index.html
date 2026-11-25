@@ -4,7 +4,48 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>مساعد الشطرنج</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script>function Chess(){var S,g=this,N=[[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]],K=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+function on(x,y){return x>=0&&x<8&&y>=0&&y<8}
+function sn(i,j){return 'abcdefgh'[j]+(8-i)}
+function opp(t){return t=='w'?'b':'w'}
+function init(){var o='rnbqkbnr',b=[],i,j;for(i=0;i<8;i++){b.push([]);for(j=0;j<8;j++)b[i].push(null)}for(j=0;j<8;j++){b[0][j]={type:o[j],color:'b'};b[1][j]={type:'p',color:'b'};b[6][j]={type:'p',color:'w'};b[7][j]={type:o[j],color:'w'}}S={b:b,t:'w',c:{K:1,Q:1,k:1,q:1},ep:null,k:{w:[7,4],b:[0,4]},st:[],h:[]}}
+function att(i,j,by){var b=S.b,d=by=='w'?1:-1,k,x,y,p;for(k=-1;k<2;k+=2){x=i+d;y=j+k;if(on(x,y)&&(p=b[x][y])&&p.color==by&&p.type=='p')return true}
+for(k=0;k<8;k++){x=i+N[k][0];y=j+N[k][1];if(on(x,y)&&(p=b[x][y])&&p.color==by&&p.type=='n')return true;x=i+K[k][0];y=j+K[k][1];if(on(x,y)&&(p=b[x][y])&&p.color==by&&p.type=='k')return true}
+for(k=0;k<8;k++){var dd=K[k],dg=k>3;x=i+dd[0];y=j+dd[1];while(on(x,y)){if(p=b[x][y]){if(p.color==by&&(p.type=='q'||p.type==(dg?'b':'r')))return true;break}x+=dd[0];y+=dd[1]}}
+return false}
+function gen(t){var b=S.b,L=[],o=opp(t),i,j,p,k,x,y,dd;
+function P(fi,fj,ti,tj,x2){var m={fi:fi,fj:fj,ti:ti,tj:tj,p:b[fi][fj],cap:b[ti][tj]};if(x2){for(var q in x2)m[q]=x2[q]}L.push(m)}
+for(i=0;i<8;i++)for(j=0;j<8;j++){p=b[i][j];if(!p||p.color!=t)continue;
+if(p.type=='p'){var dr=t=='w'?-1:1,pr=(i+dr==(t=='w'?0:7))?{pr:1}:null;x=i+dr;
+if(!b[x][j]){P(i,j,x,j,pr);if(i==(t=='w'?6:1)&&!b[x+dr][j])P(i,j,x+dr,j)}
+for(k=-1;k<2;k+=2){y=j+k;if(!on(x,y))continue;if(b[x][y]&&b[x][y].color==o)P(i,j,x,y,pr);else if(!b[x][y]&&S.ep&&S.ep[0]==x&&S.ep[1]==y)P(i,j,x,y,{e:1,cap:b[i][y]})}}
+else if(p.type=='n'||p.type=='k'){var A=p.type=='n'?N:K;for(k=0;k<8;k++){x=i+A[k][0];y=j+A[k][1];if(on(x,y)&&(!b[x][y]||b[x][y].color==o))P(i,j,x,y)}
+if(p.type=='k'&&i==(t=='w'?7:0)&&j==4&&!att(i,4,o)){var ks=t=='w'?'K':'k',qs=t=='w'?'Q':'q';
+if(S.c[ks]&&!b[i][5]&&!b[i][6]&&b[i][7]&&b[i][7].type=='r'&&!att(i,5,o)&&!att(i,6,o))P(i,4,i,6,{k:1});
+if(S.c[qs]&&!b[i][1]&&!b[i][2]&&!b[i][3]&&b[i][0]&&b[i][0].type=='r'&&!att(i,3,o)&&!att(i,2,o))P(i,4,i,2,{k:1})}}
+else{var s=p.type=='b'?4:0,e=p.type=='r'?4:8;for(k=s;k<e;k++){dd=K[k];x=i+dd[0];y=j+dd[1];while(on(x,y)){if(b[x][y]){if(b[x][y].color==o)P(i,j,x,y);break}P(i,j,x,y);x+=dd[0];y+=dd[1]}}}}
+return L}
+function make(m){var b=S.b,u={m:m,c:{K:S.c.K,Q:S.c.Q,k:S.c.k,q:S.c.q},ep:S.ep,kw:S.k.w,kb:S.k.b},t=m.p.color;
+b[m.ti][m.tj]=m.pr?{type:'q',color:t}:m.p;b[m.fi][m.fj]=null;if(m.e)b[m.fi][m.tj]=null;
+if(m.k){if(m.tj==6){b[m.ti][5]=b[m.ti][7];b[m.ti][7]=null}else{b[m.ti][3]=b[m.ti][0];b[m.ti][0]=null}}
+if(m.p.type=='k'){S.k[t]=[m.ti,m.tj];if(t=='w'){S.c.K=0;S.c.Q=0}else{S.c.k=0;S.c.q=0}}
+var cs={'70':'Q','77':'K','00':'q','07':'k'},a=cs[m.fi+''+m.fj],c2=cs[m.ti+''+m.tj];if(a)S.c[a]=0;if(c2)S.c[c2]=0;
+S.ep=(m.p.type=='p'&&Math.abs(m.ti-m.fi)==2)?[(m.fi+m.ti)/2,m.fj]:null;S.t=opp(t);S.st.push(u)}
+function unmake(){var u=S.st.pop(),m=u.m,b=S.b;b[m.fi][m.fj]=m.p;b[m.ti][m.tj]=null;if(m.e)b[m.fi][m.tj]=m.cap;else if(m.cap)b[m.ti][m.tj]=m.cap;
+if(m.k){if(m.tj==6){b[m.ti][7]=b[m.ti][5];b[m.ti][5]=null}else{b[m.ti][0]=b[m.ti][3];b[m.ti][3]=null}}
+S.c=u.c;S.ep=u.ep;S.k.w=u.kw;S.k.b=u.kb;S.t=opp(S.t)}
+function legal(){var t=S.t,o=opp(t);return gen(t).filter(function(m){make(m);var ok=!att(S.k[t][0],S.k[t][1],o);unmake();return ok})}
+g.moves=function(o){var r=legal();if(o&&o.square){var i=8-o.square[1],j=o.square.charCodeAt(0)-97;r=r.filter(function(m){return m.fi==i&&m.fj==j})}return r.map(function(m){return{from:sn(m.fi,m.fj),to:sn(m.ti,m.tj),captured:m.cap?m.cap.type:undefined,raw:m}})};
+g.move=function(x){var m=x.raw;if(!m){var r=legal();for(var k=0;k<r.length;k++)if(sn(r[k].fi,r[k].fj)==x.from&&sn(r[k].ti,r[k].tj)==x.to){m=r[k];break}}if(!m)return null;make(m);var h={from:sn(m.fi,m.fj),to:sn(m.ti,m.tj)};S.h.push(h);return h};
+g.undo=function(){if(S.st.length){unmake();S.h.pop()}};
+g.turn=function(){return S.t};g.board=function(){return S.b};
+g.get=function(n){return S.b[8-n[1]][n.charCodeAt(0)-97]};
+g.history=function(){return S.h.slice()};g.reset=init;
+g.in_check=function(){var t=S.t;return att(S.k[t][0],S.k[t][1],opp(t))};
+g.in_checkmate=function(){return g.in_check()&&!legal().length};
+g.game_over=function(){return !legal().length};
+g.san=function(x){var m=x.raw,s;if(m.k)s=m.tj==6?'O-O':'O-O-O';else{s=m.p.type=='p'?(m.cap?'abcdefgh'[m.fj]:''):m.p.type.toUpperCase();if(m.cap)s+='x';s+=sn(m.ti,m.tj);if(m.pr)s+='=Q'}make(m);if(g.in_check())s+=legal().length?'+':'#';unmake();return s};
+init()}</script>
 <style>
 :root{--bg:#eceae0;--ink:#1f2a24;--light:#eeeed2;--dark:#769656;--acc:#2d6a4f;--sel:#f6e05e;--hint:#1f8a70;--card:#fbfaf5;--line:#cfccbc;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -41,3 +82,69 @@ button.main{background:var(--acc);color:#fff;border-color:var(--acc);font-weight
 <button id="new">جديدة</button>
 </div>
 <div id="msg">حرّك القطع لك وللخصم بالضغط، وبعدين اطلب اقتراح.</div>
+<script>
+var g=new Chess(),sel=null,hint=null;
+var G={k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟\uFE0E"},V={p:100,n:320,b:330,r:500,q:900,k:0};
+var B=document.getElementById("board"),M=document.getElementById("msg");
+function flip(){return document.getElementById("color").value==="b"}
+function draw(){
+ B.innerHTML="";var bd=g.board(),tg=[],lm=g.history({verbose:true}).pop();
+ if(sel)tg=g.moves({square:sel,verbose:true}).map(function(m){return m.to});
+ for(var a=0;a<8;a++)for(var c=0;c<8;c++){
+  var i=flip()?7-a:a,j=flip()?7-c:c,name="abcdefgh"[j]+(8-i),p=bd[i][j];
+  var d=document.createElement("div");
+  d.className="sq "+((i+j)%2?"d":"l")+(sel===name?" sel":"")+(tg.indexOf(name)>-1?" tgt":"")+(hint&&(hint.from===name||hint.to===name)?" hint":"")+(lm&&(lm.from===name||lm.to===name)?" last":"");
+  if(p){d.textContent=G[p.type];d.classList.add(p.color==="w"?"w":"b")}
+  if(c===0){var r=document.createElement("span");r.className="co t";r.textContent=8-i;d.appendChild(r)}
+  if(a===7){var f=document.createElement("span");f.className="co f";f.textContent="abcdefgh"[j];d.appendChild(f)}
+  d.onclick=(function(n){return function(){tap(n)}})(name);
+  B.appendChild(d);
+ }
+}
+function tap(n){
+ if(sel){
+  var m=g.move({from:sel,to:n,promotion:"q"});
+  if(m){sel=null;hint=null;status();draw();return}
+ }
+ var p=g.get(n);
+ sel=(p&&p.color===g.turn())?n:null;draw();
+}
+function status(){
+ if(g.in_checkmate())M.textContent="كش مات! فاز "+(g.turn()==="w"?"الأسود":"الأبيض");
+ else if(g.game_over())M.textContent="تعادل";
+ else M.textContent="الدور على "+(g.turn()==="w"?"الأبيض":"الأسود")+(g.in_check()?" (كش)":"");
+}
+function ev(){var s=0;g.board().forEach(function(r,i){r.forEach(function(p,j){if(!p)return;
+ var v=V[p.type]+((7-Math.abs(7-2*i))+(7-Math.abs(7-2*j)))*(p.type==="p"||p.type==="n"?3:1);
+ s+=p.color==="w"?v:-v})});return s}
+function nm(d,a,b){
+ if(g.in_checkmate())return -99999-d;
+ if(d===0||g.game_over())return g.game_over()?0:(g.turn()==="w"?1:-1)*ev();
+ var ms=g.moves({verbose:true});
+ ms.sort(function(x,y){return (y.captured?1:0)-(x.captured?1:0)});
+ for(var k=0;k<ms.length;k++){
+  g.move(ms[k]);var s=-nm(d-1,-b,-a);g.undo();
+  if(s>a)a=s;if(a>=b)break;
+ }
+ return a;
+}
+function suggest(){
+ var L=+document.getElementById("lvl").value,ms=g.moves({verbose:true});
+ if(!ms.length)return null;
+ var sc=ms.map(function(m){g.move(m);var s=-nm(L===3?2:L-1,-1e6,1e6);g.undo();return{m:m,s:s+Math.random()*(L===1?150:L===2?25:0)}});
+ sc.sort(function(x,y){return y.s-x.s});
+ return sc[0].m;
+}
+document.getElementById("sug").onclick=function(){
+ if(g.game_over())return;
+ M.textContent="أفكر...";
+ setTimeout(function(){var m=suggest();hint=m;
+  M.textContent="العب: "+g.san(m)+" ("+m.from+" ← "+m.to+")";draw()},30);
+};
+document.getElementById("undo").onclick=function(){g.undo();sel=null;hint=null;status();draw()};
+document.getElementById("new").onclick=function(){g.reset();sel=null;hint=null;M.textContent="لعبة جديدة";draw()};
+document.getElementById("color").onchange=draw;
+draw();
+</script>
+</body>
+</html>
