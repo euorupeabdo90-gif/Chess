@@ -45,6 +45,14 @@ g.in_check=function(){var t=S.t;return att(S.k[t][0],S.k[t][1],opp(t))};
 g.in_checkmate=function(){return g.in_check()&&!legal().length};
 g.game_over=function(){return !legal().length};
 g.san=function(x){var m=x.raw,s;if(m.k)s=m.tj==6?'O-O':'O-O-O';else{s=m.p.type=='p'?(m.cap?'abcdefgh'[m.fj]:''):m.p.type.toUpperCase();if(m.cap)s+='x';s+=sn(m.ti,m.tj);if(m.pr)s+='=Q'}make(m);if(g.in_check())s+=legal().length?'+':'#';unmake();return s};
+g.setPos=function(b,t){var kk={w:[],b:[]},i,j,p,old=S;for(i=0;i<8;i++)for(j=0;j<8;j++){p=b[i][j];if(!p)continue;if(p.type=='k')kk[p.color].push([i,j]);if(p.type=='p'&&(i==0||i==7))return 'البيادق ما تكون في الصف الأول أو الأخير'}
+if(kk.w.length!=1||kk.b.length!=1)return 'لازم ملك واحد بالضبط لكل لون';
+var c={K:0,Q:0,k:0,q:0};function r(i,j,t,ty){var p=b[i][j];return !!p&&p.type==ty&&p.color==t}
+if(r(7,4,'w','k')){if(r(7,7,'w','r'))c.K=1;if(r(7,0,'w','r'))c.Q=1}
+if(r(0,4,'b','k')){if(r(0,7,'b','r'))c.k=1;if(r(0,0,'b','r'))c.q=1}
+S={b:b,t:t,c:c,ep:null,k:{w:kk.w[0],b:kk.b[0]},st:[],h:[]};
+var o=opp(t);if(att(S.k[o][0],S.k[o][1],t)){S=old;return 'الملك الثاني تحت كش وهو مو دوره'}
+return ''};
 init()}</script>
 <style>
 :root{--bg:#eceae0;--ink:#1f2a24;--light:#eeeed2;--dark:#769656;--acc:#2d6a4f;--sel:#f6e05e;--hint:#1f8a70;--card:#fbfaf5;--line:#cfccbc;
@@ -58,7 +66,8 @@ h1{font-size:25px;margin:4px 0 14px;font-weight:800;letter-spacing:-.3px}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 button,select{font:inherit;font-size:15px;padding:11px 15px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);box-shadow:0 2px 0 var(--line)}button:active{transform:translateY(2px);box-shadow:none}select{flex:1}
 button.main{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:600;flex:1}
-#board{direction:ltr;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));width:100%;aspect-ratio:1;border:7px solid #3b2f25;border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.28);overflow:hidden;margin-bottom:14px;touch-action:manipulation}
+#pal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:12px;direction:ltr}#pal .pc{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:30px;background:var(--card);border:2px solid var(--line);border-radius:10px;font-family:'Segoe UI Symbol','Noto Sans Symbols 2','Apple Symbols',serif}#pal .pc.on{border-color:var(--acc);background:var(--sel)}.tabs .on{background:var(--acc);color:#fff;border-color:var(--acc)}.tabs button{flex:1}#emsg{min-height:22px;font-weight:600;margin-top:8px}
+#board,#eb{direction:ltr;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));width:100%;aspect-ratio:1;border:7px solid #3b2f25;border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.28);overflow:hidden;margin-bottom:14px;touch-action:manipulation}
 .sq{display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;overflow:hidden;font-size:min(9.6vw,48px);line-height:1;position:relative;user-select:none;font-family:"Segoe UI Symbol","Noto Sans Symbols 2","Apple Symbols",serif}.co{position:absolute;font-size:10px;font-weight:700;line-height:1;font-family:sans-serif}.t{top:3px;left:3px}.f{bottom:3px;right:4px}.l .co{color:var(--dark)}.d .co{color:var(--light)}
 .l{background:var(--light)}.d{background:var(--dark)}
 .sq.last{background-image:linear-gradient(rgba(246,224,94,.5),rgba(246,224,94,.5))}.sq.sel{background:var(--sel)}
@@ -71,6 +80,8 @@ button.main{background:var(--acc);color:#fff;border-color:var(--acc);font-weight
 </head>
 <body>
 <h1>♞︎ مساعد الشطرنج</h1>
+<div class="row tabs"><button id="t1" class="on">اللعب</button><button id="t2">رسم الرقعة</button></div>
+<div id="play">
 <div class="row">
 <select id="color"><option value="w">أنا الأبيض</option><option value="b">أنا الأسود</option></select>
 <select id="lvl"><option value="1">مبتدئ</option><option value="2">متوسط</option><option value="3">قوي</option><option value="4" selected>قوي جداً</option><option value="5">ماستر</option></select>
@@ -82,6 +93,14 @@ button.main{background:var(--acc);color:#fff;border-color:var(--acc);font-weight
 <button id="new">جديدة</button>
 </div>
 <div id="msg">حرّك القطع لك وللخصم بالضغط، وبعدين اطلب اقتراح.</div>
+</div>
+<div id="ed" hidden>
+<div class="row"><select id="side"><option value="w">الأبيض يبدأ</option><option value="b">الأسود يبدأ</option></select></div>
+<div id="eb"></div>
+<div id="pal"></div>
+<div class="row"><button class="main" id="go">ابدأ من هذي الرقعة</button><button id="clr">مسح</button><button id="std">الأساسي</button></div>
+<div id="emsg"></div>
+</div>
 <script>
 var g=new Chess(),sel=null,hint=null;
 var G={k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟\uFE0E"},V={p:100,n:320,b:330,r:500,q:900,k:0};
@@ -177,7 +196,17 @@ document.getElementById("sug").onclick=function(){
 };
 document.getElementById("undo").onclick=function(){g.undo();sel=null;hint=null;status();draw()};
 document.getElementById("new").onclick=function(){g.reset();sel=null;hint=null;M.textContent="لعبة جديدة";draw()};
-document.getElementById("color").onchange=draw;
+document.getElementById("color").onchange=function(){draw();eDraw()};
+var EB,pk=null;
+function eInit(std){var t=new Chess();EB=t.board().map(function(r){return r.map(function(p){return std&&p?{type:p.type,color:p.color}:null})})}
+function eDraw(){var E=document.getElementById('eb');E.innerHTML='';for(var a=0;a<8;a++)for(var c=0;c<8;c++){var i=flip()?7-a:a,j=flip()?7-c:c,p=EB[i][j],d=document.createElement('div');d.className='sq '+((i+j)%2?'d':'l');if(p){d.textContent=G[p.type];d.classList.add(p.color=='w'?'w':'b')}
+d.onclick=(function(i,j){return function(){var em=document.getElementById('emsg');if(pk==null){em.textContent='اختر قطعة من الأسفل أول';return}em.textContent='';EB[i][j]=(pk=='x')?null:{type:pk[1],color:pk[0]};eDraw()}})(i,j);E.appendChild(d)}}
+function pDraw(){var P=document.getElementById('pal');P.innerHTML='';['wk','wq','wr','wb','wn','wp','x','bk','bq','br','bb','bn','bp'].forEach(function(k){var d=document.createElement('div');d.className='pc'+(k==='x'?'':(k[0]=='w'?' w':' b'))+(pk===k?' on':'');d.textContent=k==='x'?'✕':G[k[1]];d.onclick=function(){pk=k;pDraw()};P.appendChild(d)})}
+function tab(n){document.getElementById('play').hidden=n!=1;document.getElementById('ed').hidden=n!=2;document.getElementById('t1').className=n==1?'on':'';document.getElementById('t2').className=n==2?'on':'';if(n==2){eDraw();pDraw()}}
+document.getElementById('t1').onclick=function(){tab(1)};document.getElementById('t2').onclick=function(){tab(2)};
+document.getElementById('clr').onclick=function(){eInit(0);eDraw()};document.getElementById('std').onclick=function(){eInit(1);eDraw()};
+document.getElementById('go').onclick=function(){var b=EB.map(function(r){return r.map(function(p){return p?{type:p.type,color:p.color}:null})});var res=g.setPos(b,document.getElementById('side').value);if(res){document.getElementById('emsg').textContent=res;return}sel=null;hint=null;tab(1);draw();status()};
+eInit(0);
 draw();
 </script>
 </body>
